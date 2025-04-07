@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row my-1">
+                            <div class="col-md-6">
+                                <h3 class="title">Registered Customers</h3>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <a href="{% url 'customer_register' %}" class="btn btn-primary mt-3">Add New Customer</a>
+                            </div>
+                        </div>                                              
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th> Reg ID </th>
+                                        <th> Name </th>
+                                        <th> Phone </th>
+                                        <th> National ID </th>
+                                        <th> Address </th>
+                                        <th> Actions </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>{{ customer.registration_number }}</td>
+                                        <td>{{ customer.name }}</td>
+                                        <td>{{ customer.phone }}</td>
+                                        <td>{{ customer.national_id|default:"N/A" }}</td>
+                                        <td>{{ customer.address }}</td>
+                                        <td>
+                                            <a href="{% url 'customer_detail' customer.id %}" class="btn btn-info btn-sm">View</a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">No customers found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Section -->
+                        {% if customers.has_other_pages %}
+                        <nav aria-label="Customer pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if customers.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">&laquo; First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ customers.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item disabled">
+                                    <span class="page-link">Page {{ customers.number }} of {{ customers.paginator.num_pages }}</span>
+                                </li>
+
+                                {% if customers.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ customers.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ customers.paginator.num_pages }}">Last &raquo;</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                        <!-- End Pagination Section -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,184 @@
+{% load static %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <h3 class="page-title">
+        <span class="page-title-icon bg-gradient-primary text-white me-2">
+          <i class="mdi mdi-home"></i>
+        </span> Dashboard
+      </h3>
+      <nav aria-label="breadcrumb">
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item active" aria-current="page">
+            <span></span>Overview <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="row">
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-danger card-img-holder text-white">
+          <div class="card-body">
+            <img src="{% static 'assets/images/dashboard/circle.svg' %}" class="card-img-absolute" alt="circle-image" />
+            <h4 class="font-weight-normal mb-3">Customers <i class="mdi mdi-chart-line mdi-24px float-end"></i></h4>
+            <h2 class="mb-5">{{ customer_count }}</h2>
+            <h6 class="card-text">Manage</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-info card-img-holder text-white">
+          <div class="card-body">
+            <img src="{% static 'assets/images/dashboard/circle.svg' %}" class="card-img-absolute" alt="circle-image" />
+            <h4 class="font-weight-normal mb-3">Hulled Coffee <i
+                class="mdi mdi-bookmark-outline mdi-24px float-end"></i></h4>
+            <h2 class="mb-5">{{ hulked_coffee_count |floatformat:2 }} Kg</h2>
+            <h6 class="card-text">Manage</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-success card-img-holder text-white">
+          <div class="card-body">
+            <img src="{% static 'assets/images/dashboard/circle.svg' %}" class="card-img-absolute" alt="circle-image" />
+            <h4 class="font-weight-normal mb-3">Transactions <i class="mdi mdi-diamond mdi-24px float-end"></i></h4>
+            <h2 class="mb-5">{{ total_revenue_count }}</h2>
+            <h6 class="card-text">Manage</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-7 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title float-start">Top Customers By Coffee Hulked</h4>
+            <canvas id="topCustomers" class="rounded-legend legend-horizontal legend-top-right float-end">
+            </canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Revenue Analysis</h4>
+            <canvas id="revenue" class="rounded-legend legend-vertical legend-bottom-left"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 grid-margin">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Customers</h4>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th> Reg ID </th>
+                    <th> Name </th>
+                    <th> Phone </th>
+                    <th> National ID </th>
+                    <th> Address </th>
+                    <th> Actions </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for customer in customers %}
+                  <tr>
+                      <td>{{ customer.registration_number }}</td>
+                      <td>{{ customer.name }}</td>
+                      <td>{{ customer.phone }}</td>
+                      <td>{{ customer.national_id|default:"N/A" }}</td>
+                      <td>{{ customer.address }}</td>
+                      <td>
+                          <a href="{% url 'customer_detail' customer.id %}" class="btn btn-info btn-sm">View</a>
+                      </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="6" class="text-center">No customers found.</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- content-wrapper ends -->
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Data from Django template or API response
+  const topCustomers = [
+    { name: "Isaac", total_coffee: 1200 },
+    { name: "Asaba", total_coffee: 200 }
+  ];
+
+  // Extract labels (customer names) and data (total coffee brought)
+  const labels = topCustomers.map(customer => customer.name);
+  const dataValues = topCustomers.map(customer => parseFloat(customer.total_coffee));
+
+  // Get canvas element
+  const ctx = document.getElementById('topCustomers');
+
+  // Create the bar chart with dynamic data
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Total Coffee (kg)',
+        data: dataValues,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+
+<script>
+  // Get total debts and total paid from Django template variables
+  const totalDebts = parseFloat("{{ total_debts }}");
+  const totalPaid = parseFloat("{{ total_paid }}");
+
+  // Get the canvas element
+  const revenueCtx = document.getElementById('revenue');
+
+  // Create a doughnut chart
+  new Chart(revenueCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Total Paid', 'Total Debts'],
+      datasets: [{
+        data: [totalPaid, totalDebts], // Use the Django values
+        backgroundColor: ['#4CAF50', '#FF5733'], // Green for paid, red for debt
+        hoverBackgroundColor: ['#45a049', '#d14836']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+</script>

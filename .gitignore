@@ -1,0 +1,8 @@
+# Ignore Django migrations
+/migrations/.py
+/env
+/venv
+*.pyc
+*/*.pyc
+*/*/*/pyc
+/db.sqlite3
