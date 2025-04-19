@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     index,
     CustomerListView, CustomerDetailView, CustomerCreateView,
-    MillingListView, MillingCreateView,
+    MillingListView, MillingCreateView, 
     PaymentCreateView, PaymentListView, NotificationListView
 )
 
@@ -21,7 +21,7 @@ urlpatterns = [
 
     # Payment URLs
     path("app/payments/", PaymentListView.as_view(), name="payment_list"),
-    path("app/payment/<int:milling_id>/", PaymentCreateView.as_view(), name="payment_create"),
+    path("app/payments/new/", PaymentCreateView.as_view(), name="payment_create"),
     
     # Notification URLs
     path("app/notifications/<int:customer_id>/", NotificationListView.as_view(), name="notification_list"),

@@ -11,17 +11,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 
 class Customer(models.Model):
-    """Basic customer model for coffee milling system."""
-    GENDER_CHOICES = [
-        ('M', 'Male'), 
-        ('F', 'Female'), 
-        ('O', 'Other')
-    ]
     registration_number = models.CharField(max_length=50, unique=True, editable=False, help_text=_("Auto-generated customer ID (format: GPC001)"))
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     registered_at = models.DateTimeField(default=timezone.now)
     registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="registered_customers")
 
@@ -54,26 +46,12 @@ class CoffeeMilling(models.Model):
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="milling_records", help_text=_("Customer who brought the coffee"))
-    raw_coffee_weight = models.DecimalField(
-        max_digits=10, decimal_places=2, 
-        validators=[MinValueValidator(0.01)], 
-        help_text=_("Weight of coffee before milling (Kg)")
-    )
     hulled_coffee_weight = models.DecimalField(
         max_digits=10, decimal_places=2, 
         validators=[MinValueValidator(0.01)], 
         help_text=_("Weight of coffee after milling (Kg)")
     )
-    coffee_type = models.CharField(
-        max_length=10, choices=COFFEE_TYPE_CHOICES, default='arabica', 
-        help_text=_("Type of coffee being milled")
-    )
-    moisture_content = models.DecimalField(
-        max_digits=5, decimal_places=2, 
-        validators=[MinValueValidator(0), MaxValueValidator(100)], 
-        blank=True, null=True, 
-        help_text=_("Moisture content of the coffee (%)")
-    )
+
     milling_date = models.DateTimeField(default=timezone.now, help_text=_("Date and time when milling occurred"))
     cost_per_kg = models.DecimalField(
         max_digits=8, decimal_places=2, 
@@ -104,23 +82,9 @@ class CoffeeMilling(models.Model):
         return f"{self.customer.name} - {self.raw_coffee_weight}kg"
 
 class Payment(models.Model):
-    """Basic payment model for coffee milling services."""
-    PAYMENT_METHOD_CHOICES = [
-        ('cash', 'Cash'), 
-        ('mpesa', 'M-Pesa'), 
-        ('bank_transfer', 'Bank Transfer')
-    ]
-    PAYMENT_STATUS_CHOICES = [
-        ('pending', 'Pending'), 
-        ('completed', 'Completed'), 
-        ('failed', 'Failed')
-    ]
-
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='payments')
     milling_record = models.ForeignKey(CoffeeMilling, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     paid_at = models.DateTimeField(default=timezone.now)
     registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="registered_payments")
 

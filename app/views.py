@@ -19,7 +19,7 @@ def index(request):
 
     # Get the top 5 customers by the amount of coffee they brought for milling
     top_customers = CoffeeMilling.objects.values('customer__name').annotate(
-        total_coffee=Sum('raw_coffee_weight')
+        total_coffee=Sum('hulled_coffee_weight')
     ).order_by('-total_coffee')[:5]
 
     # Calculate total paid money and debts

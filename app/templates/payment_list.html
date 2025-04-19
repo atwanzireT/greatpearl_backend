@@ -12,6 +12,9 @@
                             <div class="col-md-6">
                                 <h3 class="title">Payments</h3>
                             </div>
+                            <div class="col-md-6 text-end">
+                                <a href="/app/payments/new/" class="btn btn-primary mt-3">Add New Transaction</a>
+                            </div>
                         </div>                                              
                         <div class="table-responsive">
                             <table class="table">
@@ -20,9 +23,6 @@
                                         <th> Customer </th>
                                         <th> Milling ID </th>
                                         <th> Amount Paid </th>
-                                        <th> Payment Method </th>
-                                        <th> Payment Status </th>
-                                        <th> Transaction ID </th>
                                         <th> Paid At </th>
                                         <th> Actions </th>
                                     </tr>
@@ -30,16 +30,9 @@
                                 <tbody>
                                     {% for payment in payments %}
                                     <tr>
-                                        <td>{{ payment.milling.customer.name }}</td>
-                                        <td>{{ payment.milling.id }}</td>
+                                        <td>{{ payment.customer.name }}</td>
+                                        <td>{% if payment.milling_record %}{{ payment.milling_record.id }}{% else %}-{% endif %}</td>
                                         <td>UGX {{ payment.amount_paid }}</td>
-                                        <td>{{ payment.get_payment_method_display }}</td>
-                                        <td>
-                                            <span class="badge {% if payment.payment_status == 'paid' %}bg-success{% elif payment.payment_status == 'overdue' %}bg-danger{% else %}bg-warning{% endif %}">
-                                                {{ payment.get_payment_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ payment.transaction_id }}</td>
                                         <td>{{ payment.paid_at|date:"Y-m-d H:i" }}</td>
                                         <td>
                                             <a href="#" class="btn btn-info btn-sm">View</a>
@@ -47,14 +40,13 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="8" class="text-center">No payments found.</td>
+                                        <td colspan="5" class="text-center">No payments found.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Pagination Section -->
                         {% if payments.has_other_pages %}
                         <nav aria-label="Payments pagination">
                             <ul class="pagination justify-content-center">
@@ -82,12 +74,10 @@
                             </ul>
                         </nav>
                         {% endif %}
-                        <!-- End Pagination Section -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock content %}
