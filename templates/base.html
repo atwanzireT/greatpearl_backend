@@ -1,218 +1,480 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Great Pearl Coffee</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="{% static 'assets/vendors/mdi/css/materialdesignicons.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendors/ti-icons/css/themify-icons.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendors/css/vendor.bundle.base.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendors/font-awesome/css/font-awesome.min.css' %}">
-    <!-- endinject -->
-    <!-- Plugin css for this page -->
-    <link rel="stylesheet" href="{% static 'assets/vendors/font-awesome/css/font-awesome.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-    <link rel="shortcut icon" href="{% static 'assets/logo.png' %}" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GreatPearl Coffee{% endblock %}</title>
+    {{ form.media.css }}
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+
+    <script>
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b'
+                        },
+                        accent: {
+                            400: '#facc15',
+                            500: '#eab308'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Custom scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 2px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Glass effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hover animations */
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Active nav link indicator */
+        .nav-active {
+            position: relative;
+        }
+        
+        .nav-active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: #facc15;
+            border-radius: 0 2px 2px 0;
+        }
+
+         /* Add this to prevent Select2/Tailwind conflicts */
+        .select2-container {
+            z-index: 10000 !important;
+        }
+        .select2-container--default .select2-selection--single {
+            height: 42px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+    </style>
 </head>
-
-<body>
-    <!-- partial:partials/_navbar.html -->
-    <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-            <a class="navbar-brand brand-logo" style="height: 50px; width: 100px;" href="/"><img
-                    style="height: 50px; width: 100px;" src="{% static 'assets/logo.png' %}" alt="logo" /></a>
-            <a class="navbar-brand brand-logo-mini" style="height: 50px; width: 100px;" href="/"><img
-                    style="height: 50px; width: 100px;" src="{% static 'assets/logo.png' %}" alt="logo" /></a>
-        </div>
-        <div class="navbar-menu-wrapper d-flex align-items-stretch">
-            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-                <span class="mdi mdi-menu"></span>
+<body class="bg-gray-50 font-sans">
+<!-- Topbar -->
+<nav class="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm border-b border-gray-200 z-50">
+    <div class="flex items-center justify-between h-full px-4 lg:px-6">
+        <!-- Left side -->
+        <div class="flex items-center space-x-4">
+            <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden">
+                <i class="fas fa-bars text-gray-600"></i>
             </button>
-            <div class="search-field d-none d-md-block">
-                <form class="d-flex align-items-center h-100" action="#">
-                    <div class="input-group">
-                        <div class="input-group-prepend bg-transparent">
-                            <i class="input-group-text border-0 mdi mdi-magnify"></i>
-                        </div>
-                        <input type="text" class="form-control bg-transparent border-0" placeholder="Search projects">
-                    </div>
-                </form>
+
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl">
+                    <i class="fas fa-coffee text-white text-lg"></i>
+                </div>
+                <div class="hidden sm:block">
+                    <h1 class="text-xl font-bold text-gray-900">
+                        GreatPearl <span class="text-primary-600">Coffee</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 -mt-1">Management System</p>
+                </div>
             </div>
-            <ul class="navbar-nav navbar-nav-right">
-                <li class="nav-item nav-profile dropdown">
-                    <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <div class="nav-profile-img">
-                            {% if user.profile_picture %}
-                                <img src="{{ user.profile_picture.url }}" alt="image">
-                            {% else %}
-                                <img src="{% static 'assets/logo.png' %}" alt="default image">
-                            {% endif %}
-                            <span class="availability-status online"></span>
-                        </div>
-                        <div class="nav-profile-text">
-                            <p class="mb-1 text-black">{{user.username}}</p>
-                        </div>
-                    </a>
-                    <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
-                        <a class="dropdown-item" href="#">
-                            <i class="mdi mdi-cached me-2 text-success"></i> Activity Log </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">
-                            <i class="mdi mdi-logout me-2 text-primary"></i> Signout </a>
-                    </div>
-                </li>
-                <li class="nav-item d-none d-lg-block full-screen-link">
-                    <a class="nav-link">
-                        <i class="mdi mdi-fullscreen" id="fullscreen-button"></i>
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
-                        data-bs-toggle="dropdown">
-                        <i class="mdi mdi-bell-outline"></i>
-                        <span class="count-symbol bg-danger"></span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end navbar-dropdown preview-list"
-                        aria-labelledby="notificationDropdown">
-                        <h6 class="p-3 mb-0">Notifications</h6>
+        </div>
 
-
-                        {% for rs in notifications %}
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item preview-item">
-                            <div class="preview-thumbnail">
-                                <div class="preview-icon bg-success">
-                                    <i class="mdi mdi-bell"></i>
-                                </div>
-                            </div>
-                            <div
-                                class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                <h6 class="preview-subject font-weight-normal mb-1">{{rs.customer}}</h6>
-                                <p class="text-gray ellipsis mb-0"> {{rs.message}} </p>
-                            </div>
-                        </a>
-                        {% endfor %}
-
-                        <h6 class="p-3 mb-0 text-center">See all notifications</h6>
-                    </div>
-                </li>
-                <li class="nav-item nav-logout d-none d-lg-block">
-                    <a class="nav-link" href="">
-                        <i class="mdi mdi-power"></i>
-                    </a>
-                </li>
-                <li class="nav-item nav-settings d-none d-lg-block">
-                    <a class="nav-link" href="#">
-                        <i class="mdi mdi-format-line-spacing"></i>
-                    </a>
-                </li>
-            </ul>
-            <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
-                data-toggle="offcanvas">
-                <span class="mdi mdi-menu"></span>
+        <!-- Right side -->
+        <div class="flex items-center space-x-4">
+            <!-- Notifications -->
+            <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <i class="fas fa-bell text-gray-600"></i>
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
             </button>
-        </div>
-    </nav>
-    <!-- partial -->
 
-    <div class="container-fluid page-body-wrapper">
-        <!-- partial:partials/_sidebar.html -->
-        <nav class="sidebar sidebar-offcanvas" id="sidebar">
-            <ul class="nav">
-                <li class="nav-item nav-profile">
-                    <a href="#" class="nav-link">
-                        <div class="nav-profile-image">
-                            {% if user.profile_picture %}
-                                <img src="{{ user.profile_picture.url }}" alt="profile" />
-                            {% else %}
-                                <img src="{% static 'assets/logo.png' %}" alt="default profile" />
-                            {% endif %}
-                            <span class="login-status online"></span>
-                            <!--change to offline or busy as needed-->
-                        </div>
-                        <div class="nav-profile-text d-flex flex-column">
-                            <span class="font-weight-bold mb-2">{{ user.username }}</span>
-                            <span class="text-secondary text-small">{{user.phone_number}}</span>
-                        </div>
-                        <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/">
-                        <span class="menu-title">Dashboard</span>
-                        <i class="mdi mdi-home menu-icon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/app/customers/">
-                        <span class="menu-title">Customers</span>
-                        <i class="mdi mdi-account-multiple menu-icon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/app/milling/">
-                        <span class="menu-title">Milling</span>
-                        <i class="mdi mdi-tools menu-icon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/app/payments/">
-                        <span class="menu-title">Transactions</span>
-                        <i class="mdi mdi-wallet menu-icon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/accounts/register/">
-                        <span class="menu-title">Users</span>
-                        <i class="mdi mdi-wallet menu-icon"></i>
-                    </a>
-                </li>
-            </ul>
+            {% if user.is_authenticated %}
+            <!-- User dropdown -->
+            <div class="relative group">
+                <button class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div class="w-8 h-8 bg-gradient-to-br from-accent-400 to-accent-500 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold text-gray-900">{{ user.username|first|upper }}</span>
+                    </div>
+                    <div class="hidden md:block text-left">
+                        <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
+                        <p class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                </button>
+
+                <!-- Dropdown menu -->
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div class="py-2">
+                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-user w-4 mr-3 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-cog w-4 mr-3 text-gray-400"></i>
+                            Settings
+                        </a>
+                        <hr class="my-2 border-gray-200">
+                        <a href="{% url 'logout' %}"
+                           class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                            <i class="fas fa-sign-out-alt w-4 mr-3 text-red-400"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <a href="{% url 'login' %}"
+               class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Login
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<aside id="sidebar"
+       class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 sidebar overflow-y-auto">
+    <div class="p-4">
+        <!-- Navigation -->
+        <nav class="space-y-2">
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main</h3>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-chart-pie w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'customer_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-users w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Customers</span>
+                            <span class="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{{ customer_count }}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'inventory_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-boxes w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Inventory</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Operations</h3>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="{% url 'milling_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-cogs w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Milling</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'transaction_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-exchange-alt w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Transactions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'supplier_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-truck w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Suppliers</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sales</h3>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="{% url 'purchase_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-shopping-cart w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Purchases</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'sale_list' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-cash-register w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Sales</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">System</h3>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="{% url 'user_activities' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-history w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Activity Log</span>
+                        </a>
+                    </li>
+                    {% if request.user.is_superuser %}
+                    <li>
+                        <a href="{% url 'admin:index' %}"
+                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                            <i class="fas fa-cog w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                            <span class="font-medium">Admin</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
         </nav>
-        <!-- partial -->
-
-        {% block content %}
-
-        {% endblock content %}
-
-        <!-- main-panel ends -->
     </div>
+</aside>
 
-    <!-- partial:partials/_footer.html -->
-    <footer class="footer">
-        <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023 <a
-                    href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
-            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i
-                    class="mdi mdi-heart text-danger"></i></span>
+<!-- Main Content -->
+<main class="lg:ml-64 pt-16 min-h-screen bg-gray-50">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="p-4 lg:p-6">
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-lg border-l-4 {% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-700{% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %}">
+            <div class="flex items-center">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                <span>{{ message }}</span>
+                <button type="button" class="ml-auto text-gray-400 hover:text-gray-600"
+                        onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
-    </footer>
-    <!-- partial -->
-    <!-- page-body-wrapper ends -->
+        {% endfor %}
     </div>
-    <!-- container-scroller -->
-    <!-- plugins:js -->
-    <script src="{% static 'assets/vendors/js/vendor.bundle.base.js' %}"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
-    <script src="{% static 'assets/vendors/chart.js/chart.umd.js' %}"></script>
-    <script src="{% static 'assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js' %}"></script>
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-    <script src="{% static 'assets/js/off-canvas.js' %}"></script>
-    <script src="{% static 'assets/js/misc.js' %}"></script>
-    <script src="{% static 'assets/js/settings.js' %}"></script>
-    <script src="{% static 'assets/js/todolist.js' %}"></script>
-    <script src="{% static 'assets/js/jquery.cookie.js' %}"></script>
-    <!-- endinject -->
-    <!-- Custom js for this page -->
-    <script src="{% static 'assets/js/dashboard.js' " %}></script>
-    <!-- End custom js for this page -->
-  </body>
+    {% endif %}
+
+    <!-- Content -->
+    <div class="p-4 lg:p-6">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                        {% block page_title %}Dashboard{% endblock %}
+                    </h1>
+                    {% block breadcrumb %}
+                    <nav class="flex text-sm text-gray-500">
+                        <a href="#" class="hover:text-gray-700">Home</a>
+                        <span class="mx-2">/</span>
+                        <span>Dashboard</span>
+                    </nav>
+                    {% endblock %}
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        {% block content %}
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Customers</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">1,234</p>
+                        <p class="text-sm text-green-600 mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>12% from last month
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Monthly Sales</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">$56,789</p>
+                        <p class="text-sm text-green-600 mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>8% from last month
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Processing Orders</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">89</p>
+                        <p class="text-sm text-yellow-600 mt-1">
+                            <i class="fas fa-clock mr-1"></i>5 pending today
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cogs text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">24</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            <i class="fas fa-truck mr-1"></i>All verified
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-truck text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-8 text-white mb-8">
+            <div class="flex flex-col lg:flex-row items-center justify-between">
+                <div class="text-center lg:text-left mb-6 lg:mb-0">
+                    <h2 class="text-3xl font-bold mb-2">Welcome to CoffeeHub</h2>
+                    <p class="text-primary-100 mb-4">Manage your coffee business efficiently with our comprehensive
+                        management system.</p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button class="inline-flex items-center px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-book mr-2"></i>
+                            View Documentation
+                        </button>
+                        <button class="inline-flex items-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-400 transition-colors">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Quick Start Guide
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-coffee text-6xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+    </div>
+</main>
+
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebarOverlay"
+     class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden opacity-0 invisible transition-all duration-300"></div>
+
+<!-- Scripts -->
+<script>
+    // Sidebar toggle functionality
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+        sidebarOverlay.classList.toggle('opacity-0');
+        sidebarOverlay.classList.toggle('invisible');
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // Active navigation highlighting
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('aside nav a');
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('bg-primary-50', 'text-primary-700', 'nav-active');
+            link.classList.remove('text-gray-700', 'hover:bg-gray-100');
+        }
+    });
+
+    // Close mobile menu on window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0', 'invisible');
+        }
+    });
+</script>
+<!-- Add jQuery (required by Select2) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{{ form.media.js }}
+</body>
 </html>

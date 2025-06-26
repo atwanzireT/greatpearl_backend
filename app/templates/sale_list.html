@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block page_title %}Coffee Sales{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'sale_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
+    <i class="fas fa-plus mr-2"></i>
+    Record Sale
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+    <div class="p-4 lg:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">     
+            <!-- Date Range Filter -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="start-date" class="text-sm text-gray-500 whitespace-nowrap">From:</label>
+                    <input type="date" id="start-date" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="end-date" class="text-sm text-gray-500 whitespace-nowrap">To:</label>
+                    <input type="date" id="end-date" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                </div>
+            
+                <button id="reset-filters" class="flex items-center px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                    <i class="fas fa-sync-alt mr-2 text-gray-400"></i>
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Coffee Sales Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <!-- Card Header -->
+    <div class="px-4 lg:px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Coffee Sales</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    <span id="showing-count">{{ page_obj.start_index }} - {{ page_obj.end_index }}</span> of 
+                    <span id="total-count">{{ page_obj.paginator.count }}</span> sales
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-500">Total:</span>
+                <span id="total-sales" class="text-lg font-semibold text-emerald-600">
+                    Ugx. {{ total_sales|default:"0.00" }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="sales-table-body" class="bg-white divide-y divide-gray-200">
+                {% for sale in object_list %}
+                <tr class="sale-row hover:bg-gray-50 transition-colors"
+                    data-id="{{ sale.id }}"
+                    data-date="{{ sale.sale_date|date:'Y-m-d' }}"
+                    data-customer="{{ sale.customer.name|lower }}"
+                    data-type="{{ sale.sale_type }}"
+                    data-form="{{ sale.coffee_category|lower }}"
+                    data-quantity="{{ sale.quantity }}"
+                    data-unit-price="{{ sale.unit_price }}"
+                    data-total="{{ sale.total_amount }}">
+                    <td class="py-4 px-4 lg:px-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
+                            <span class="sale-date text-sm text-gray-900">{{ sale.sale_date|date:"M d, Y" }}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gradient-to-br from-emerald-200 to-emerald-300 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-emerald-600 text-xs font-medium">{{ sale.customer|first|upper }}</span>
+                            </div>
+                            <span class="customer-name text-sm font-medium text-gray-900">{{ sale.customer }}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6">
+                        <span class="sale-type inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if sale.sale_type == 'WS' %}bg-emerald-100 text-emerald-800{% else %}bg-indigo-100 text-indigo-800{% endif %}">
+                            {{ sale.coffee_type }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6">
+                        <span class="coffee-form inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if sale.sale_type == 'WS' %}bg-emerald-100 text-emerald-800{% else %}bg-indigo-100 text-indigo-800{% endif %}">
+                            {{ sale.coffee_category }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="quantity text-sm text-gray-900">{{ sale.quantity }} kg</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="unit-price text-sm font-medium text-gray-900">Ugx. {{ sale.unit_price }}</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="total-amount text-sm font-semibold text-green-600">Ugx. {{ sale.total_amount }}</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="#" class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-shopping-bag text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No sales found</h3>
+                            <p class="text-gray-500 mb-4">Get started by recording your first coffee sale.</p>
+                            <a href="{% url 'sale_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Record Sale
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty state for filtered results -->
+    <div id="no-results" class="hidden py-12 text-center">
+        <div class="flex flex-col items-center">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-search text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No matching sales found</h3>
+            <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+            <button id="reset-filters-btn" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Reset Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="px-4 lg:px-6 py-4 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-4 sm:mb-0">
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
+                </p>
+            </div>
+            
+            <div class="flex items-center space-x-1">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                        <i class="fas fa-chevron-left mr-1"></i>
+                        Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg">
+                            {{ num }}
+                        </span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" 
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                        Next
+                        <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const startDate = document.getElementById('start-date');
+    const endDate = document.getElementById('end-date');
+    const typeFilter = document.getElementById('type-filter');
+    const saleRows = document.querySelectorAll('.sale-row');
+    const noResultsDiv = document.getElementById('no-results');
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+    const resetFilters = document.getElementById('reset-filters');
+    const showingCount = document.getElementById('showing-count');
+    const totalSales = document.getElementById('total-sales');
+    
+    // Store original counts
+    let visibleCount = saleRows.length;
+    let runningTotal = parseFloat("{{ total_sales|default:'0' }}".replace(/,/g, ''));
+    
+    // Function to filter sales
+    function filterSales() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const typeValue = typeFilter.value;
+        const startDateValue = startDate.value;
+        const endDateValue = endDate.value;
+        let visibleRows = 0;
+        let filteredTotal = 0;
+        
+        saleRows.forEach(row => {
+            const id = row.dataset.id;
+            const date = row.dataset.date;
+            const customer = row.dataset.customer;
+            const type = row.dataset.type;
+            const form = row.dataset.form;
+            const quantity = row.dataset.quantity;
+            const unitPrice = row.dataset.unitPrice;
+            const total = parseFloat(row.dataset.total);
+            
+            // Check search term against various fields
+            const matchesSearch = searchTerm === '' || 
+                id.includes(searchTerm) || 
+                date.includes(searchTerm) || 
+                customer.includes(searchTerm) ||
+                form.includes(searchTerm) ||
+                quantity.includes(searchTerm) ||
+                unitPrice.includes(searchTerm);
+            
+            // Check type filter
+            const matchesType = typeValue === '' || type === typeValue;
+            
+            // Check date range filter
+            const matchesDate = (!startDateValue || date >= startDateValue) && 
+                              (!endDateValue || date <= endDateValue);
+            
+            if (matchesSearch && matchesType && matchesDate) {
+                row.style.display = '';
+                visibleRows++;
+                filteredTotal += total;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update the showing count
+        showingCount.textContent = visibleRows > 0 ? `1 - ${visibleRows}` : '0';
+        
+        // Update the total sales
+        totalSales.textContent = `Ugx. ${filteredTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        // Show/hide no results message
+        if (visibleRows === 0 && (searchTerm !== '' || typeValue !== '' || startDateValue || endDateValue)) {
+            noResultsDiv.classList.remove('hidden');
+        } else {
+            noResultsDiv.classList.add('hidden');
+        }
+    }
+    
+    // Debounce function to limit how often the filter executes
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                func.apply(context, args);
+            }, wait);
+        };
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', debounce(filterSales, 300));
+    typeFilter.addEventListener('change', filterSales);
+    startDate.addEventListener('change', filterSales);
+    endDate.addEventListener('change', filterSales);
+    
+    resetFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        typeFilter.value = '';
+        startDate.value = '';
+        endDate.value = '';
+        filterSales();
+    });
+    
+    resetFilters.addEventListener('click', function() {
+        searchInput.value = '';
+        typeFilter.value = '';
+        startDate.value = '';
+        endDate.value = '';
+        filterSales();
+    });
+    
+    // Initialize
+    filterSales();
+});
+</script>
+{% endblock %}

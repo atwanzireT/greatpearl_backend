@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block page_title %}Coffee Purchases{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'purchase_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
+    <i class="fas fa-plus mr-2"></i>
+    Record Purchase
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+    <div class="p-4 lg:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- Search -->
+            <div class="flex-1 max-w-md">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search purchases..." 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            
+            <!-- Filter Options -->
+            <div class="flex items-center gap-3">
+                <button id="reset-search" class="flex items-center px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                    <i class="fas fa-sync-alt mr-2 text-gray-400"></i>
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Coffee Purchases Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <!-- Card Header -->
+    <div class="px-4 lg:px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Coffee Purchases</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    <span id="showing-count">{{ page_obj.start_index }} - {{ page_obj.end_index }}</span> of 
+                    <span id="total-count">{{ page_obj.paginator.count }}</span> purchases
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Coffee Type</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="purchase-table-body" class="bg-white divide-y divide-gray-200">
+                {% for purchase in object_list %}
+                <tr class="purchase-row hover:bg-gray-50 transition-colors"
+                    data-id="{{ purchase.id }}"
+                    data-date="{{ purchase.purchase_date|date:'Y-m-d' }}"
+                    data-supplier="{{ purchase.supplier.name|lower }}"
+                    data-category="{{ purchase.get_coffee_category_display|lower }}"
+                    data-type="{{ purchase.get_coffee_type_display|lower }}"
+                    data-quantity="{{ purchase.quantity }}"
+                    data-unit-price="{{ purchase.unit_price }}"
+                    data-total="{{ purchase.total_cost }}">
+                    <td class="py-4 px-4 lg:px-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
+                            <span class="purchase-date text-sm text-gray-900">{{ purchase.purchase_date|date:"M d, Y" }}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gradient-to-br from-orange-200 to-orange-300 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-orange-600 text-xs font-medium">{{ purchase.supplier.name|first|upper }}</span>
+                            </div>
+                            <span class="supplier-name text-sm font-medium text-gray-900">{{ purchase.supplier.name }}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6">
+                        <div class="flex flex-col">
+                            <span class="coffee-category text-sm font-medium text-gray-900">{{ purchase.get_coffee_category_display }}</span>
+                            <span class="coffee-type text-xs text-gray-500">{{ purchase.get_coffee_type_display }}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="quantity text-sm text-gray-900">{{ purchase.quantity }} kg</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="unit-price text-sm font-medium text-gray-900">Ugx. {{ purchase.unit_price }}</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <span class="total-cost text-sm font-semibold text-emerald-600">Ugx. {{ purchase.total_cost }}</span>
+                    </td>
+                    <td class="py-4 px-4 lg:px-6 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="#" class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-coffee text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No purchases found</h3>
+                            <p class="text-gray-500 mb-4">Get started by recording your first coffee purchase.</p>
+                            <a href="{% url 'purchase_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Record Purchase
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty state for filtered results -->
+    <div id="no-results" class="hidden py-12 text-center">
+        <div class="flex flex-col items-center">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-search text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No matching purchases found</h3>
+            <p class="text-gray-500 mb-4">Try adjusting your search query</p>
+            <button id="reset-search-btn" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Reset Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="px-4 lg:px-6 py-4 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-4 sm:mb-0">
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
+                </p>
+            </div>
+            
+            <div class="flex items-center space-x-1">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                        <i class="fas fa-chevron-left mr-1"></i>
+                        Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg">
+                            {{ num }}
+                        </span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" 
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                        Next
+                        <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const purchaseRows = document.querySelectorAll('.purchase-row');
+    const noResultsDiv = document.getElementById('no-results');
+    const resetSearchBtn = document.getElementById('reset-search-btn');
+    const resetSearch = document.getElementById('reset-search');
+    const showingCount = document.getElementById('showing-count');
+    const totalCount = document.getElementById('total-count');
+    
+    // Store original counts
+    const originalTotalCount = parseInt(totalCount.textContent);
+    let visibleCount = purchaseRows.length;
+    
+    // Function to filter purchases
+    function filterPurchases() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleRows = 0;
+        
+        purchaseRows.forEach(row => {
+            const id = row.dataset.id;
+            const date = row.dataset.date;
+            const supplier = row.dataset.supplier;
+            const category = row.dataset.category;
+            const type = row.dataset.type;
+            const quantity = row.dataset.quantity;
+            const unitPrice = row.dataset.unitPrice;
+            const total = row.dataset.total;
+            
+            // Check search term against various fields
+            const matches = searchTerm === '' || 
+                id.includes(searchTerm) || 
+                date.includes(searchTerm) || 
+                supplier.includes(searchTerm) ||
+                category.includes(searchTerm) ||
+                type.includes(searchTerm) ||
+                quantity.includes(searchTerm) ||
+                unitPrice.includes(searchTerm) ||
+                total.includes(searchTerm);
+            
+            if (matches) {
+                row.style.display = '';
+                visibleRows++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update the showing count
+        showingCount.textContent = visibleRows > 0 ? `1 - ${visibleRows}` : '0';
+        
+        // Show/hide no results message
+        if (visibleRows === 0 && searchTerm !== '') {
+            noResultsDiv.classList.remove('hidden');
+        } else {
+            noResultsDiv.classList.add('hidden');
+        }
+    }
+    
+    // Debounce function to limit how often the filter executes
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                func.apply(context, args);
+            }, wait);
+        };
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', debounce(filterPurchases, 300));
+    
+    resetSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        filterPurchases();
+    });
+    
+    resetSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        filterPurchases();
+    });
+    
+    // Initialize
+    filterPurchases();
+});
+</script>
+{% endblock %}
