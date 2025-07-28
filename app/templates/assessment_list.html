@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Quality Assessments - GreatPearl Coffee{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Quality Assessments</h1>
+            <p class="text-sm text-gray-600 mt-1">Track and manage coffee quality evaluations</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Pending Assessments</p>
+                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ unassessed_purchases.count }}</p>
+                </div>
+                <div class="p-3 rounded-full bg-emerald-50 text-emerald-600">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <a href="#" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center">
+                    View all
+                    <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Completed This Month</p>
+                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ completed_this_month }}</p>
+                </div>
+                <div class="p-3 rounded-full bg-green-50 text-green-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    From last month
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Rejection Rate</p>
+                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ rejection_rate }}%</p>
+                </div>
+                <div class="p-3 rounded-full bg-red-50 text-red-600">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div class="bg-red-500 h-1.5 rounded-full" style="width: {{ rejection_rate }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unassessed Purchases Section -->
+    {% if unassessed_purchases %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8 hover:shadow-md transition-shadow">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-white flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">Purchases Needing Assessment</h2>
+                <p class="text-sm text-gray-600 mt-1">These coffee purchases require quality evaluation</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                {{ unassessed_purchases.count }} pending
+                <i class="fas fa-exclamation-circle ml-1"></i>
+            </span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Supplier
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Coffee Details
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Quantity
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Purchase Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for purchase in unassessed_purchases %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-emerald-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ purchase.supplier.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ purchase.supplier.phone }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ purchase.get_coffee_type_display }} {{ purchase.get_coffee_category_display }}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                                    <i class="fas fa-tag mr-1 text-gray-500"></i>
+                                    Lot #{{ purchase.lot_number|default:"N/A" }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <i class="fas fa-weight-hanging mr-2 text-gray-400"></i>
+                                <span class="text-sm font-medium text-gray-900">
+                                    {{ purchase.quantity|floatformat:"0" }} kg
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ purchase.purchase_date|date:"M d, Y" }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ purchase.purchase_date|timesince }} ago
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="/assessments/{{purchase.id}}/create/" class="inline-flex items-center px-3 py-1.5 border border-emerald-300 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors">
+                                Assess
+                                <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Assessments Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-white flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div class="mb-4 md:mb-0">
+                <h2 class="text-lg font-semibold text-gray-800">Quality Assessment History</h2>
+                <p class="text-sm text-gray-600 mt-1">Completed quality evaluations</p>
+            </div>
+            <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <input type="text" placeholder="Search assessments..."
+                        class="pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm w-full focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+                <select class="border border-gray-200 rounded-lg text-sm px-4 py-2.5 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none w-full md:w-auto">
+                    <option>All Status</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Coffee Details
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Quality Score
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Price Analysis
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Assessed By
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for assessment in assessments %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                    <i class="fas fa-coffee text-amber-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ assessment.coffee.get_coffee_type_display }} {{ assessment.coffee.get_coffee_category_display }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span class="inline-flex items-center">
+                                            <i class="fas fa-user-circle mr-1 text-gray-400"></i>
+                                            {{ assessment.coffee.supplier.name }}
+                                        </span>
+                                        <span class="mx-2">•</span>
+                                        <span class="inline-flex items-center">
+                                            <i class="fas fa-weight-hanging mr-1 text-gray-400"></i>
+                                            {{ assessment.coffee.quantity|floatformat:"0" }}kg
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="mr-3">
+                                    {% if assessment.quality_score >= 85 %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 flex items-center">
+                                        <i class="fas fa-star mr-1 text-xs"></i>
+                                        Excellent
+                                    </span>
+                                    {% elif assessment.quality_score >= 70 %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        Good
+                                    </span>
+                                    {% elif assessment.quality_score >= 50 %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Fair
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                        Poor
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ assessment.quality_score|default:"-" }}/100
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1 flex items-center space-x-2">
+                                <span class="inline-flex items-center">
+                                    <i class="fas fa-times-circle mr-1 text-red-400"></i>
+                                    {{ assessment.group1_defects|default:"0" }} G1
+                                </span>
+                                <span class="inline-flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1 text-yellow-400"></i>
+                                    {{ assessment.group2_defects|default:"0" }} G2
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if assessment.is_rejected %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 flex items-center">
+                                <i class="fas fa-ban mr-1"></i>
+                                Rejected
+                            </span>
+                            {% else %}
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">UGX {{ assessment.final_price|default:"-" }}</div>
+                                <div class="flex items-center mt-1">
+                                    {% if assessment.final_price > assessment.coffee.reference_price %}
+                                    <i class="fas fa-arrow-up text-xs text-red-500 mr-1"></i>
+                                    <span class="text-xs text-red-500">
+                                        +{{ assessment.price_difference_percentage|floatformat:"2" }}%
+                                    </span>
+                                    {% else %}
+                                    <i class="fas fa-arrow-down text-xs text-emerald-500 mr-1"></i>
+                                    <span class="text-xs text-emerald-500">
+                                        {{ assessment.price_difference_percentage|floatformat:"2" }}%
+                                    </span>
+                                    {% endif %}
+                                    <span class="text-xs text-gray-500 ml-1">vs reference</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900">{{ assessment.assessed_by.get_full_name|default:"System" }}</div>
+                                    <div class="text-xs text-gray-500">Q-Grader</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ assessment.assessment_date|date:"M d, Y" }}</div>
+                            <div class="text-xs text-gray-500 flex items-center">
+                                <i class="far fa-clock mr-1"></i>
+                                {{ assessment.assessment_date|timesince }} ago
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center text-gray-400">
+                                <i class="fas fa-clipboard-list text-4xl mb-3"></i>
+                                <p class="text-sm">No quality assessments found</p>
+                                <a href="#" class="mt-2 text-sm text-emerald-600 hover:text-emerald-800 flex items-center">
+                                    Create your first assessment
+                                    <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if assessments.paginator.num_pages > 1 %}
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+            <nav class="flex items-center justify-between">
+                <div class="flex-1 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing <span class="font-medium">{{ page_obj.start_index }}</span>
+                            to <span class="font-medium">{{ page_obj.end_index }}</span>
+                            of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
+                        </p>
+                    </div>
+                    <div>
+                        <ul class="flex space-x-2">
+                            {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page=1"
+                                    class="px-3 py-1 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center">
+                                    <i class="fas fa-angle-double-left mr-1 text-xs"></i>
+                                    First
+                                </a>
+                            </li>
+                            <li>
+                                <a href="?page={{ page_obj.previous_page_number }}"
+                                    class="px-3 py-1 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center">
+                                    <i class="fas fa-angle-left mr-1 text-xs"></i>
+                                    Previous
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li>
+                                <span
+                                    class="px-3 py-1 border border-emerald-500 bg-emerald-500 text-white rounded text-sm font-medium">
+                                    {{ num }}
+                                </span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li>
+                                <a href="?page={{ num }}"
+                                    class="px-3 py-1 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-100">
+                                    {{ num }}
+                                </a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                <li>
+                                    <a href="?page={{ page_obj.next_page_number }}"
+                                        class="px-3 py-1 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center">
+                                        Next
+                                        <i class="fas fa-angle-right ml-1 text-xs"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="?page={{ page_obj.paginator.num_pages }}"
+                                        class="px-3 py-1 border border-gray-200 rounded text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center">
+                                        Last
+                                        <i class="fas fa-angle-double-right ml-1 text-xs"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

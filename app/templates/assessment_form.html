@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - GreatPearl Coffee{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">{{ page_title }}</h1>
+                    <p class="text-sm text-gray-600 mt-1">Complete all required fields to submit the quality assessment</p>
+                </div>
+                <a href="{% url 'assessment_list' %}" 
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Assessments
+                </a>
+            </div>
+            
+            <!-- Coffee Purchase Info Card -->
+            <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Supplier</p>
+                        <p class="text-sm font-medium text-gray-900">{{ coffee_purchase.supplier.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Coffee Type</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ coffee_purchase.get_coffee_type_display }} {{ coffee_purchase.get_coffee_category_display }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Quantity</p>
+                        <p class="text-sm font-medium text-gray-900">{{ coffee_purchase.quantity }} kg</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Form -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <!-- Form Errors -->
+                {% if form.errors %}
+                <div class="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                    <h3 class="text-sm font-medium text-red-800 flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Please correct the errors below
+                    </h3>
+                    <ul class="mt-2 text-sm text-red-700 list-disc pl-5 space-y-1">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Quality Metrics Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-clipboard-check text-emerald-600 mr-2"></i>
+                        Quality Metrics
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Column 1 -->
+                        <div class="space-y-4">
+                            <!-- Moisture Content -->
+                            <div>
+                                <label for="{{ form.moisture_content.id_for_label }}" 
+                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ form.moisture_content.label }}
+                                </label>
+                                <div class="relative mt-1 rounded-md shadow-sm">
+                                    {{ form.moisture_content }}
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">%</span>
+                                    </div>
+                                </div>
+                                {% if form.moisture_content.help_text %}
+                                <p class="mt-1 text-xs text-gray-500">{{ form.moisture_content.help_text }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Group 1 Defects -->
+                            <div>
+                                <label for="{{ form.group1_defects.id_for_label }}" 
+                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ form.group1_defects.label }}
+                                </label>
+                                {{ form.group1_defects }}
+                                {% if form.group1_defects.help_text %}
+                                <p class="mt-1 text-xs text-gray-500">{{ form.group1_defects.help_text }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Group 2 Defects -->
+                            <div>
+                                <label for="{{ form.group2_defects.id_for_label }}" 
+                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ form.group2_defects.label }}
+                                </label>
+                                {{ form.group2_defects }}
+                                {% if form.group2_defects.help_text %}
+                                <p class="mt-1 text-xs text-gray-500">{{ form.group2_defects.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Column 2 -->
+                        <div class="space-y-4">
+                            <!-- Below Screen 12 -->
+                            <div>
+                                <label for="{{ form.below_screen_12.id_for_label }}" 
+                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ form.below_screen_12.label }}
+                                </label>
+                                <div class="relative mt-1 rounded-md shadow-sm">
+                                    {{ form.below_screen_12 }}
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">%</span>
+                                    </div>
+                                </div>
+                                {% if form.below_screen_12.help_text %}
+                                <p class="mt-1 text-xs text-gray-500">{{ form.below_screen_12.help_text }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Outturn -->
+                            <div>
+                                <label for="{{ form.outturn.id_for_label }}" 
+                                       class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ form.outturn.label }}
+                                </label>
+                                {{ form.outturn }}
+                                {% if form.outturn.help_text %}
+                                <p class="mt-1 text-xs text-gray-500">{{ form.outturn.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Foreign Matter Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-search-minus text-emerald-600 mr-2"></i>
+                        Foreign Matter Analysis
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Pods -->
+                        <div>
+                            <label for="{{ form.pods.id_for_label }}" 
+                                   class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.pods.label }}
+                            </label>
+                            {{ form.pods }}
+                        </div>
+                        
+                        <!-- Husks -->
+                        <div>
+                            <label for="{{ form.husks.id_for_label }}" 
+                                   class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.husks.label }}
+                            </label>
+                            {{ form.husks }}
+                        </div>
+                        
+                        <!-- Stones -->
+                        <div>
+                            <label for="{{ form.stones.id_for_label }}" 
+                                   class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.stones.label }}
+                            </label>
+                            {{ form.stones }}
+                        </div>
+                    </div>
+                    
+                    <!-- FM Total -->
+                    <div class="mt-4">
+                        <label for="{{ form.fm.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.fm.label }}
+                        </label>
+                        {{ form.fm }}
+                        {% if form.fm.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ form.fm.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Discretion Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-adjust text-emerald-600 mr-2"></i>
+                        Price Adjustment
+                    </h3>
+                    
+                    <div>
+                        <label for="{{ form.discretion.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.discretion.label }}
+                        </label>
+                        <div class="relative mt-1 rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">UGX</span>
+                            </div>
+                            {{ form.discretion }}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Positive value increases price, negative value decreases price
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                    <a href="{% url 'assessment_list' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md">
+                        <i class="fas fa-save mr-2"></i>
+                        Save Assessment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add some custom styling for number inputs -->
+<style>
+    input[type="number"] {
+        text-align: right;
+        -moz-appearance: textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}

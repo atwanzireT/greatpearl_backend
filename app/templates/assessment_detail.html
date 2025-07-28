@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assessment Details - GreatPearl Coffee{% endblock %}
+
+{% block page_title %}Assessment Details{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex text-sm text-gray-500">
+    <a href="{% url 'home' %}" class="hover:text-gray-700">Home</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'assessment_list' %}" class="hover:text-gray-700">Assessments</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-600">Details</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-medium text-gray-900 flex items-center">
+                    <i class="fas fa-clipboard-check text-primary-600 mr-2"></i>
+                    Quality Assessment
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ assessment.coffee.get_coffee_type_display }} {{ assessment.coffee.get_coffee_category_display }}
+                </p>
+            </div>
+            <div class="flex space-x-2">
+                <a href="{% url 'assessment_list' %}" 
+                   class="px-3 py-1 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    Back to List
+                </a>
+                <button onclick="window.print()" 
+                        class="px-3 py-1 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-print mr-1"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment Content -->
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Coffee Information -->
+            <div class="md:col-span-1">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-coffee text-primary-600 mr-2"></i>
+                        Coffee Details
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Supplier:</span>
+                            <span class="font-medium">{{ assessment.coffee.supplier.name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Type:</span>
+                            <span>{{ assessment.coffee.get_coffee_type_display }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Form:</span>
+                            <span>{{ assessment.coffee.get_coffee_category_display }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Quantity:</span>
+                            <span>{{ assessment.coffee.quantity|floatformat:"0" }} kg</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Purchase Date:</span>
+                            <span>{{ assessment.coffee.purchase_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Reference Price:</span>
+                            <span>UGX {{ assessment.coffee.reference_price }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Metrics -->
+            <div class="md:col-span-1">
+                <div class="bg-gray-50 p-4 rounded-lg h-full">
+                    <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-flask text-primary-600 mr-2"></i>
+                        Quality Metrics
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Moisture Content:</span>
+                            <span class="font-medium">{{ assessment.moisture_content|default:"-" }}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Group 1 Defects:</span>
+                            <span>{{ assessment.group1_defects|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Group 2 Defects:</span>
+                            <span>{{ assessment.group2_defects|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Below Screen 12:</span>
+                            <span>{{ assessment.below_screen_12|default:"-" }}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Expected Outturn:</span>
+                            <span>{{ assessment.outturn|default:"-" }}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Actual Outturn:</span>
+                            <span class="font-medium">{{ assessment.actual_outturn|default:"-" }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foreign Matter & Results -->
+            <div class="md:col-span-1">
+                <div class="bg-gray-50 p-4 rounded-lg h-full">
+                    <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-search text-primary-600 mr-2"></i>
+                        Foreign Matter
+                    </h3>
+                    <div class="space-y-3 text-sm mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Pods:</span>
+                            <span>{{ assessment.pods|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Husks:</span>
+                            <span>{{ assessment.husks|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Stones:</span>
+                            <span>{{ assessment.stones|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">FM Total:</span>
+                            <span class="font-medium">{{ assessment.fm|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Discretion:</span>
+                            <span>{{ assessment.discretion|default:"0" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Price Calculation -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-calculator text-primary-600 mr-2"></i>
+                            Price Calculation
+                        </h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between {% if assessment.is_rejected %}text-red-600{% endif %}">
+                                <span class="text-gray-500">Status:</span>
+                                <span class="font-medium">
+                                    {% if assessment.is_rejected %}
+                                    <i class="fas fa-times-circle mr-1"></i> REJECTED
+                                    {% else %}
+                                    <i class="fas fa-check-circle text-green-600 mr-1"></i> ACCEPTED
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Outturn Price:</span>
+                                <span>UGX {{ assessment.outturn_price|default:"-" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">FM Penalty:</span>
+                                <span>- UGX {{ assessment.foreign_matter_penalty|default:"0" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Discretion Adjustment:</span>
+                                <span>+ UGX {{ assessment.discretion|default:"0" }}</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-200 mt-2 pt-2">
+                                <span class="text-gray-700 font-medium">Final Price:</span>
+                                <span class="font-bold text-primary-600">
+                                    UGX {{ assessment.final_price|default:"-" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        {% if assessment.coffee.notes %}
+        <div class="mt-6 bg-blue-50 p-4 rounded-lg">
+            <h3 class="text-sm font-medium text-blue-800 mb-2 flex items-center">
+                <i class="fas fa-sticky-note text-blue-600 mr-2"></i>
+                Purchase Notes
+            </h3>
+            <p class="text-sm text-blue-900">{{ assessment.coffee.notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Assessment Date -->
+        <div class="mt-6 text-right text-sm text-gray-500">
+            <p>Assessment created on {{ assessment.coffee.purchase_date|date:"M d, Y" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style type="text/css" media="print">
+    @page {
+        size: auto;
+        margin: 10mm;
+    }
+    body {
+        padding: 0;
+        background: white;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .bg-gray-50 {
+        background-color: #f9fafb !important;
+        -webkit-print-color-adjust: exact;
+    }
+    .border-gray-200 {
+        border-color: #e5e7eb !important;
+    }
+</style>
+{% endblock %}

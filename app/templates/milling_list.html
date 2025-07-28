@@ -1,304 +1,281 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Milling Processes - GreatPearl Coffee{% endblock %}
+
 {% block page_title %}Milling Processes{% endblock %}
 
+{% block breadcrumb %}
+<nav class="flex text-sm text-gray-500">
+    <a href="{% url 'home' %}" class="hover:text-gray-700">Home</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-600">Milling</span>
+</nav>
+{% endblock %}
+
 {% block header_actions %}
-<a href="{% url 'milling_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-    <i class="fas fa-plus mr-2"></i>
-    New Process
-</a>
+<button onclick="toggleMillingForm()" 
+        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+    <i class="fas fa-plus mr-2"></i> New Milling Process
+</button>
 {% endblock %}
 
 {% block content %}
-<!-- Search and Filter Bar -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-    <div class="p-4 lg:p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <!-- Search -->
-            <div class="flex-1 max-w-md">
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Search processes..." 
-                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
-            </div>
-            
-            <!-- Status Filter -->
-            <div class="flex items-center gap-3">
-                <select id="status-filter" class="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
-                    <option value="">All Statuses</option>
-                    <option value="P">Pending</option>
-                    <option value="C">Completed</option>
-                    <option value="X">Cancelled</option>
-                </select>
-                
-                <button id="reset-filters" class="flex items-center px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-sm">
-                    <i class="fas fa-sync-alt mr-2 text-gray-400"></i>
-                    Reset
-                </button>
+<div class="space-y-6">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags %}{{ message.tags }}{% endif %}">
+            <div class="flex items-center">
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle mr-2 text-green-500"></i>
+                {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle mr-2 text-red-500"></i>
+                {% endif %}
+                <span>{{ message }}</span>
             </div>
         </div>
+        {% endfor %}
     </div>
-</div>
+    {% endif %}
 
-<!-- Milling Process List Card -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200">
-    <!-- Card Header -->
-    <div class="px-4 lg:px-6 py-4 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-900">Milling Processes</h2>
-                <p class="text-sm text-gray-500 mt-1">
-                    <span id="showing-count">{{ page_obj.start_index }} - {{ page_obj.end_index }}</span> of 
-                    <span id="total-count">{{ page_obj.paginator.count }}</span> processes
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="bg-gray-50 border-b border-gray-200">
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Initial Weight</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Hulled Weight</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="process-table-body" class="bg-white divide-y divide-gray-200">
-                {% for process in object_list %}
-                <tr class="process-row hover:bg-gray-50 transition-colors" 
-                    data-id="{{ process.id }}"
-                    data-customer="{{ process.customer.name|lower }}"
-                    data-customer-id="{{ process.customer.id }}"
-                    data-status="{{ process.status }}"
-                    data-date="{{ process.created_at|date:'Y-m-d' }}"
-                    data-weight="{{ process.initial_weight }}">
-                    <td class="py-4 px-4 lg:px-6">
-                        <span class="text-sm font-medium text-gray-900">#{{ process.id }}</span>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mr-3">
-                                <span class="text-gray-600 font-medium">{{ process.customer.name|first|upper }}</span>
+    <!-- Milling Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-10">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Customer
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Initial Weight
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Hulled Weight
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Cost (UGX)
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for process in milling_processes %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-green-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ process.customer.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ process.customer.phone }}</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="customer-name text-sm font-medium text-gray-900">{{ process.customer.name }}</div>
-                                <div class="customer-id text-xs text-gray-500">{{ process.customer.id }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ process.initial_weight|default:"-" }} kg
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ process.hulled_weight|default:"-" }} kg
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                            {{ process.milling_cost|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if process.status == 'C' %}bg-green-100 text-green-800
+                                {% elif process.status == 'P' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ process.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ process.created_at|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="editMillingProcess('{{ process.id }}', '{{ process.customer.id }}', '{{ process.hulled_weight|default:"" }}', '{{ process.notes|escapejs }}')" 
+                                        class="text-green-600 hover:text-green-800 px-3 py-1 rounded-md hover:bg-green-50 transition-colors">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <span class="initial-weight text-sm text-gray-900">{{ process.initial_weight }} kg</span>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        {% if process.hulled_weight %}
-                            <span class="text-sm text-gray-900">{{ process.hulled_weight }} kg</span>
-                        {% else %}
-                            <span class="text-sm text-gray-400">-</span>
-                        {% endif %}
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <span class="status-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            {% if process.status == 'P' %}bg-yellow-100 text-yellow-800
-                            {% elif process.status == 'C' %}bg-green-100 text-green-800
-                            {% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {{ process.get_status_display }}
-                        </span>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
-                            <span class="process-date text-sm text-gray-900">{{ process.created_at|date:"M d, Y" }}</span>
-                        </div>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <a href="#" class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            {% if process.status == 'P' %}
-                            <a href="#" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Complete Process">
-                                <i class="fas fa-check"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="py-12 text-center">
-                        <div class="flex flex-col items-center">
-                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <i class="fas fa-industry text-gray-400 text-2xl"></i>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center text-gray-400">
+                                <i class="fas fa-coffee text-4xl mb-3"></i>
+                                <p class="text-sm font-medium mb-4">No milling processes found</p>
+                                <button onclick="toggleMillingForm()" class="text-green-600 hover:text-green-800 text-sm font-medium inline-flex items-center">
+                                    <i class="fas fa-plus mr-1"></i> Add milling process
+                                </button>
                             </div>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">No milling processes found</h3>
-                            <p class="text-gray-500 mb-4">Get started by creating a new milling process.</p>
-                            <a href="{% url 'milling_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
-                                <i class="fas fa-plus mr-2"></i>
-                                New Process
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Empty state for filtered results -->
-    <div id="no-results" class="hidden py-12 text-center">
-        <div class="flex flex-col items-center">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-search text-gray-400 text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No matching processes found</h3>
-            <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-            <button id="reset-filters-btn" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                <i class="fas fa-sync-alt mr-2"></i>
-                Reset Filters
-            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Pagination -->
     {% if is_paginated %}
-    <div class="px-4 lg:px-6 py-4 border-t border-gray-200">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div class="mb-4 sm:mb-0">
-                <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
-                </p>
-            </div>
+    <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+        <div class="text-sm text-gray-500">
+            Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Previous</a>
+            {% endif %}
             
-            <div class="flex items-center space-x-1">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" 
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                        <i class="fas fa-chevron-left mr-1"></i>
-                        Previous
-                    </a>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg">
-                            {{ num }}
-                        </span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}" 
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                            {{ num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" 
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                        Next
-                        <i class="fas fa-chevron-right ml-1"></i>
-                    </a>
-                {% endif %}
-            </div>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Next</a>
+            {% endif %}
         </div>
     </div>
     {% endif %}
 </div>
 
+<!-- Modal Overlay -->
+<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-opacity duration-300"></div>
+
+<!-- Milling Modal -->
+<div id="millingModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900" id="formTitle">New Milling Process</h2>
+                <button onclick="toggleMillingForm()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="post" id="millingForm">
+                {% csrf_token %}
+                <input type="hidden" name="milling_id" id="milling_id" value="">
+                
+                <div class="space-y-4">
+                    <!-- Customer Field -->
+                    <div>
+                        <label for="id_customer" class="block text-sm font-medium text-gray-700 mb-1">Customer*</label>
+                        {{ form.customer }}
+                        {% if form.customer.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.customer.errors }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Initial Weight -->
+                    <div>
+                        <label for="id_initial_weight" class="block text-sm font-medium text-gray-700 mb-1">Initial Weight (kg)</label>
+                        {{ form.initial_weight }}
+                        {% if form.initial_weight.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.initial_weight.errors }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Hulled Weight -->
+                    <div>
+                        <label for="id_hulled_weight" class="block text-sm font-medium text-gray-700 mb-1">Hulled Weight (kg)*</label>
+                        {{ form.hulled_weight }}
+                        {% if form.hulled_weight.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.hulled_weight.errors }}</p>
+                        {% endif %}
+                    </div>
+           
+                    <!-- Notes -->
+                    <div>
+                        <label for="id_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.notes.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="toggleMillingForm()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        Save Process
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input');
-    const statusFilter = document.getElementById('status-filter');
-    const processRows = document.querySelectorAll('.process-row');
-    const noResultsDiv = document.getElementById('no-results');
-    const resetFiltersBtn = document.getElementById('reset-filters-btn');
-    const resetFilters = document.getElementById('reset-filters');
-    const showingCount = document.getElementById('showing-count');
-    const totalCount = document.getElementById('total-count');
-    
-    // Store original counts
-    const originalTotalCount = parseInt(totalCount.textContent);
-    let visibleCount = processRows.length;
-    
-    // Function to filter processes
-    function filterProcesses() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-        let visibleRows = 0;
+    // Toggle milling form visibility
+    function toggleMillingForm() {
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('millingModal');
+        const modalContent = modal.querySelector('div');
         
-        processRows.forEach(row => {
-            const id = row.dataset.id;
-            const customer = row.dataset.customer;
-            const customerId = row.dataset.customerId;
-            const status = row.dataset.status;
-            const date = row.dataset.date;
-            const weight = row.dataset.weight;
+        if (modal.classList.contains('hidden')) {
+            // Show modal
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
             
-            // Check search term against various fields
-            const matchesSearch = searchTerm === '' || 
-                id.includes(searchTerm) || 
-                customer.includes(searchTerm) || 
-                customerId.includes(searchTerm) ||
-                date.includes(searchTerm) ||
-                weight.includes(searchTerm);
-            
-            // Check status filter
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            if (matchesSearch && matchesStatus) {
-                row.style.display = '';
-                visibleRows++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        
-        // Update the showing count
-        showingCount.textContent = visibleRows > 0 ? `1 - ${visibleRows}` : '0';
-        
-        // Show/hide no results message
-        if (visibleRows === 0 && (searchTerm !== '' || statusValue !== '')) {
-            noResultsDiv.classList.remove('hidden');
+            // Reset form when showing
+            document.getElementById('millingForm').reset();
+            document.getElementById('milling_id').value = '';
+            document.getElementById('formTitle').textContent = 'New Milling Process';
         } else {
-            noResultsDiv.classList.add('hidden');
+            // Hide modal
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }, 300);
         }
     }
     
-    // Debounce function to limit how often the filter executes
-    function debounce(func, wait) {
-        let timeout;
-        return function() {
-            const context = this, args = arguments;
-            clearTimeout(timeout);
-            timeout = setTimeout(function() {
-                func.apply(context, args);
-            }, wait);
-        };
+    // Edit milling process function
+    function editMillingProcess(id, customerId, hulledWeight, notes) {
+        // Fill the form with milling data
+        document.getElementById('milling_id').value = id;
+        document.getElementById('id_customer').value = customerId;
+        document.getElementById('id_hulled_weight').value = hulledWeight;
+        document.getElementById('id_notes').value = notes;
+        
+        // Update form title
+        document.getElementById('formTitle').textContent = 'Edit Milling Process';
+        
+        // Show the modal
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('millingModal');
+        const modalContent = modal.querySelector('div');
+        
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
     }
     
-    // Event listeners
-    searchInput.addEventListener('input', debounce(filterProcesses, 300));
-    statusFilter.addEventListener('change', filterProcesses);
-    
-    resetFiltersBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        statusFilter.value = '';
-        filterProcesses();
-    });
-    
-    resetFilters.addEventListener('click', function() {
-        searchInput.value = '';
-        statusFilter.value = '';
-        filterProcesses();
-    });
-    
-    // Initialize
-    filterProcesses();
-});
+    // Close modal when clicking outside
+    document.getElementById('modalOverlay').addEventListener('click', toggleMillingForm);
 </script>
 {% endblock %}

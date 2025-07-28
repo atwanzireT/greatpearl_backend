@@ -1,134 +1,111 @@
 {% extends "base.html" %}
-{% block page_title %}Suppliers{% endblock %}
+{% load static %}
+
+{% block title %}Suppliers - GreatPearl Coffee{% endblock %}
+
+{% block page_title %}Coffee Suppliers{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex text-sm text-gray-500">
+    <a href="{% url 'home' %}" class="hover:text-gray-700">Home</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-600">Suppliers</span>
+</nav>
+{% endblock %}
 
 {% block header_actions %}
-<a href="{% url 'supplier_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-    <i class="fas fa-plus mr-2"></i>
-    Add Supplier
-</a>
+<button onclick="toggleSupplierForm()" 
+        class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
+    <i class="fas fa-plus mr-2"></i> Add Supplier
+</button>
 {% endblock %}
 
 {% block content %}
-<!-- Search and Filter Bar -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-    <div class="p-4 lg:p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <!-- Search -->
-            <div class="flex-1 max-w-md">
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Search suppliers..." 
-                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+    <!-- Search and Filter Bar -->
+    <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative w-full sm:w-64">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
             </div>
-            
-            <!-- Filter Options -->
-            <div class="flex items-center gap-3">
-                <button id="reset-search" class="flex items-center px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-sm">
-                    <i class="fas fa-sync-alt mr-2 text-gray-400"></i>
-                    Reset
-                </button>
-            </div>
+            <input type="text" id="supplier-search" placeholder="Search suppliers..." 
+                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
         </div>
-    </div>
-</div>
-
-<!-- Supplier List Card -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200">
-    <!-- Card Header -->
-    <div class="px-4 lg:px-6 py-4 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-900">Coffee Suppliers</h2>
-                <p class="text-sm text-gray-500 mt-1">
-                    <span id="showing-count">{{ page_obj.start_index }} - {{ page_obj.end_index }}</span> of 
-                    <span id="total-count">{{ page_obj.paginator.count }}</span> suppliers
-                </p>
-            </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500">Total: {{ suppliers.count }}</span>
         </div>
     </div>
 
-    <!-- Table -->
+    <!-- Supplier Table -->
     <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="bg-gray-50 border-b border-gray-200">
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th class="text-left py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
-                    <th class="text-right py-3 px-4 lg:px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Supplier
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phone
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Last Purchase
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
                 </tr>
             </thead>
-            <tbody id="supplier-table-body" class="bg-white divide-y divide-gray-200">
-                {% for supplier in object_list %}
-                <tr class="supplier-row hover:bg-gray-50 transition-colors"
-                    data-id="{{ supplier.id }}"
-                    data-name="{{ supplier.name|lower }}"
-                    data-email="{{ supplier.email|default:''|lower }}"
-                    data-phone="{{ supplier.phone }}"
-                    data-contact="{{ supplier.contact_person|default:''|lower }}"
-                    data-date="{{ supplier.created_at|date:'Y-m-d' }}">
-                    <td class="py-4 px-4 lg:px-6">
-                        <span class="supplier-id inline-flex items-center px-2 py-1 bg-gray-100 rounded-md text-xs font-medium text-gray-800">
-                            {{ supplier.id }}
-                        </span>
-                    </td>
-                    <td class="py-4 px-4 lg:px-6">
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for supplier in suppliers %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-gradient-to-br from-orange-200 to-orange-300 rounded-full flex items-center justify-center mr-3">
-                                <span class="text-orange-600 font-medium">{{ supplier.name|first|upper }}</span>
+                            <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-truck text-primary-600"></i>
                             </div>
-                            <div>
-                                <div class="supplier-name text-sm font-medium text-gray-900">{{ supplier.name }}</div>
-                                {% if supplier.email %}
-                                <div class="supplier-email text-xs text-gray-500">{{ supplier.email }}</div>
-                                {% endif %}
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ supplier.name }}</div>
+                                <div class="text-xs text-gray-500">ID: {{ supplier.id }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <span class="contact-person text-sm text-gray-900">
-                            {{ supplier.contact_person|default:"-" }}
-                        </span>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">{{ supplier.email|default:"-" }}</div>
                     </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-phone text-gray-400 mr-2"></i>
-                            <span class="supplier-phone text-sm text-gray-900">{{ supplier.phone }}</span>
-                        </div>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ supplier.phone }}
                     </td>
-                    <td class="py-4 px-4 lg:px-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
-                            <span class="supplier-date text-sm text-gray-900">{{ supplier.created_at|date:"M d, Y" }}</span>
-                        </div>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% with last_purchase=supplier.coffeepurchase_set.last %}
+                            {{ last_purchase.purchase_date|date:"M d, Y"|default:"Never" }}
+                        {% endwith %}
                     </td>
-                    <td class="py-4 px-4 lg:px-6 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <a href="#" class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="View Details">
-                                <i class="fas fa-eye"></i>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end space-x-2">
+                            <a href="/suppliers/{{supplier.id}}/" 
+                               class="text-primary-600 hover:text-primary-900 px-3 py-1 rounded-md hover:bg-primary-50 transition-colors">
+                                <i class="fas fa-eye mr-1"></i> View
                             </a>
-                            <a href="#" class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit Supplier">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <button onclick="editSupplier('{{ supplier.id }}', '{{ supplier.name|escapejs }}', '{{ supplier.contact_person|escapejs }}', '{{ supplier.phone }}', '{{ supplier.email }}', `{{ supplier.address|escapejs }}`)"
+                                    class="text-yellow-600 hover:text-yellow-900 px-3 py-1 rounded-md hover:bg-yellow-50 transition-colors">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="py-12 text-center">
-                        <div class="flex flex-col items-center">
-                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <i class="fas fa-truck text-gray-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">No suppliers found</h3>
-                            <p class="text-gray-500 mb-4">Get started by adding your first coffee supplier.</p>
-                            <a href="{% url 'supplier_create' %}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
-                                <i class="fas fa-plus mr-2"></i>
-                                Add Supplier
-                            </a>
+                    <td colspan="5" class="px-6 py-4 text-center">
+                        <div class="text-gray-500 py-8">
+                            <i class="fas fa-truck text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-sm">No suppliers found</p>
+                            <button onclick="toggleSupplierForm()" 
+                                    class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i> Add Your First Supplier
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -136,149 +113,144 @@
             </tbody>
         </table>
     </div>
+</div>
 
-    <!-- Empty state for filtered results -->
-    <div id="no-results" class="hidden py-12 text-center">
-        <div class="flex flex-col items-center">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-search text-gray-400 text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No matching suppliers found</h3>
-            <p class="text-gray-500 mb-4">Try adjusting your search query</p>
-            <button id="reset-search-btn" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                <i class="fas fa-sync-alt mr-2"></i>
-                Reset Search
-            </button>
-        </div>
-    </div>
+<!-- Modal Overlay -->
+<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-opacity duration-300"></div>
 
-    <!-- Pagination -->
-    {% if is_paginated %}
-    <div class="px-4 lg:px-6 py-4 border-t border-gray-200">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div class="mb-4 sm:mb-0">
-                <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
-                </p>
+<!-- Supplier Modal -->
+<div id="supplierModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900" id="formTitle">Add New Supplier</h2>
+                <button onclick="toggleSupplierForm()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <div class="flex items-center space-x-1">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" 
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                        <i class="fas fa-chevron-left mr-1"></i>
-                        Previous
-                    </a>
-                {% endif %}
+            <form method="post" id="supplierForm">
+                {% csrf_token %}
+                <input type="hidden" name="supplier_id" id="supplier_id" value="">
                 
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg">
-                            {{ num }}
-                        </span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}" 
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                            {{ num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
+                <div class="space-y-4">
+                    <!-- Name Field -->
+                    <div>
+                        <label for="id_name" class="block text-sm font-medium text-gray-700 mb-1">Supplier Name*</label>
+                        <input type="text" name="name" id="id_name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                               placeholder="Company / Individual name">
+                    </div>
+                    
+                    <!-- Phone Field -->
+                    <div>
+                        <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-1">Phone*</label>
+                        <input type="text" name="phone" id="id_phone" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                               placeholder="+256XXXXXXXXX">
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div>
+                        <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" id="id_email"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                               placeholder="supplier@example.com">
+                    </div>
+                    
+                    <!-- Address Field -->
+                    <div>
+                        <label for="id_address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <textarea name="address" id="id_address" rows="3"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                  placeholder="Physical address including district"></textarea>
+                    </div>
+                </div>
                 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" 
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                        Next
-                        <i class="fas fa-chevron-right ml-1"></i>
-                    </a>
-                {% endif %}
-            </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="toggleSupplierForm()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
+                        Save Supplier
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    {% endif %}
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input');
-    const supplierRows = document.querySelectorAll('.supplier-row');
-    const noResultsDiv = document.getElementById('no-results');
-    const resetSearchBtn = document.getElementById('reset-search-btn');
-    const resetSearch = document.getElementById('reset-search');
-    const showingCount = document.getElementById('showing-count');
-    const totalCount = document.getElementById('total-count');
-    
-    // Store original counts
-    const originalTotalCount = parseInt(totalCount.textContent);
-    let visibleCount = supplierRows.length;
-    
-    // Function to filter suppliers
-    function filterSuppliers() {
-        const searchTerm = searchInput.value.toLowerCase();
-        let visibleRows = 0;
+    // Toggle supplier form visibility
+    function toggleSupplierForm() {
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('supplierModal');
+        const modalContent = modal.querySelector('div');
         
-        supplierRows.forEach(row => {
-            const id = row.dataset.id;
-            const name = row.dataset.name;
-            const email = row.dataset.email;
-            const phone = row.dataset.phone;
-            const contact = row.dataset.contact;
-            const date = row.dataset.date;
+        if (modal.classList.contains('hidden')) {
+            // Show modal
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
             
-            // Check search term against various fields
-            const matches = searchTerm === '' || 
-                id.includes(searchTerm) || 
-                name.includes(searchTerm) || 
-                email.includes(searchTerm) ||
-                phone.includes(searchTerm) ||
-                contact.includes(searchTerm) ||
-                date.includes(searchTerm);
-            
-            if (matches) {
-                row.style.display = '';
-                visibleRows++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        
-        // Update the showing count
-        showingCount.textContent = visibleRows > 0 ? `1 - ${visibleRows}` : '0';
-        
-        // Show/hide no results message
-        if (visibleRows === 0 && searchTerm !== '') {
-            noResultsDiv.classList.remove('hidden');
+            // Reset form when showing
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplier_id').value = '';
+            document.getElementById('formTitle').textContent = 'Add New Supplier';
+            document.getElementById('id_name').focus();
         } else {
-            noResultsDiv.classList.add('hidden');
+            // Hide modal
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }, 300);
         }
     }
     
-    // Debounce function to limit how often the filter executes
-    function debounce(func, wait) {
-        let timeout;
-        return function() {
-            const context = this, args = arguments;
-            clearTimeout(timeout);
-            timeout = setTimeout(function() {
-                func.apply(context, args);
-            }, wait);
-        };
+    // Edit supplier function
+    function editSupplier(id, name, phone, email, address) {
+        // Fill the form with supplier data
+        document.getElementById('supplier_id').value = id;
+        document.getElementById('id_name').value = name;
+        document.getElementById('id_phone').value = phone;
+        document.getElementById('id_email').value = email;
+        document.getElementById('id_address').value = address;
+        
+        // Update form title
+        document.getElementById('formTitle').textContent = 'Edit Supplier';
+        
+        // Show the modal
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('supplierModal');
+        const modalContent = modal.querySelector('div');
+        
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
     }
     
-    // Event listeners
-    searchInput.addEventListener('input', debounce(filterSuppliers, 300));
+    // Close modal when clicking outside
+    document.getElementById('modalOverlay').addEventListener('click', toggleSupplierForm);
     
-    resetSearchBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        filterSuppliers();
+    // Simple search functionality
+    document.getElementById('supplier-search').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
     });
-    
-    resetSearch.addEventListener('click', function() {
-        searchInput.value = '';
-        filterSuppliers();
-    });
-    
-    // Initialize
-    filterSuppliers();
-});
 </script>
 {% endblock %}

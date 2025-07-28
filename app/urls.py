@@ -2,35 +2,41 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('', index, name="index"),
+    path('', dashboard, name="home"),
 
     # Customer URLs
-    path('customers/', CustomerListView.as_view(), name='customer_list'),
-    path('customers/add/', CustomerCreateView.as_view(), name='customer_create'),
-    path('customers/<int:pk>/edit/', CustomerUpdateView.as_view(), name='customer_edit'),
-    path('customers/<int:pk>/', CustomerDetailView.as_view(), name='customer_detail'),
+    path('customers/', customer_list, name='customer_list'),
+    path('customers/<int:pk>/', customer_detail, name='customer_detail'),
     
     # Milling Process URLs
-    path('milling/', MillingProcessListView.as_view(), name='milling_list'),
-    path('milling/add/', MillingProcessCreateView.as_view(), name='milling_create'),
+    path('milling/', milling_list, name='milling_list'),
+    path('milling/<int:pk>/', milling_detail, name='milling_detail'),
+
+    # Quality Assessment URLs
+    path('assessments/', assessment_list, name='assessment_list'),
+    path('assessments/<int:pk>/create/', assessment_create, name='assessment_create'),
+    path('assessments/<int:pk>/', assessment_detail, name='assessment_detail'),
     
     # Transaction URLs
-    path('transactions/', TransactionListView.as_view(), name='transaction_list'),
-    path('transactions/add/', TransactionCreateView.as_view(), name='transaction_create'),
+    path('transactions/', transaction_list, name='transaction_list'),
+    path('transactions/<int:pk>/', transaction_detail, name='transaction_detail'),
     
     # Supplier URLs
-    path('suppliers/', SupplierListView.as_view(), name='supplier_list'),
-    path('suppliers/add/', SupplierCreateView.as_view(), name='supplier_create'),
+    path('suppliers/', supplier_list, name='supplier_list'),
+    path('suppliers/<int:pk>/', supplier_detail, name='supplier_detail'),
     
     # Coffee Purchase URLs
-    path('purchases/', CoffeePurchaseListView.as_view(), name='purchase_list'),
-    path('purchases/add/', CoffeePurchaseCreateView.as_view(), name='purchase_create'),
+    path('purchases/', purchase_list, name='purchase_list'),
+    path('purchases/<int:pk>/', purchase_detail, name='purchase_detail'),
     
     # Coffee Sale URLs
-    path('sales/', CoffeeSaleListView.as_view(), name='sale_list'),
-    path('sales/add/', CoffeeSaleCreateView.as_view(), name='sale_create'),
+    path('sales/', sale_list, name='sale_list'),
+    path('sales/<int:pk>/', sale_detail, name='sale_detail'),
 
-    # Inventory
-    path('inventory/', InventoryListView.as_view(), name='inventory_list'),
-    path('inventory/<int:pk>/', InventoryDetailView.as_view(), name='inventory_detail'),
+    # Inventory URLs
+    path('inventory/', inventory_dashboard, name='inventory_list'),
+    path('inventory/<int:pk>/', inventory_detail, name='inventory_detail'),
+
+    # Search URLs
+    path('customer-search/', customer_search, name='customer_search'),
 ]

@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     {{ form.media.css }}
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -46,21 +48,21 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        
+
         /* Custom scrollbar */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
-        
+
         .sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
-        
+
         .sidebar::-webkit-scrollbar-thumb {
             background: rgba(156, 163, 175, 0.5);
             border-radius: 2px;
         }
-        
+
         .sidebar::-webkit-scrollbar-thumb:hover {
             background: rgba(156, 163, 175, 0.7);
         }
@@ -86,7 +88,7 @@
         .nav-active {
             position: relative;
         }
-        
+
         .nav-active::before {
             content: '';
             position: absolute;
@@ -99,382 +101,407 @@
             border-radius: 0 2px 2px 0;
         }
 
-         /* Add this to prevent Select2/Tailwind conflicts */
+        /* Add this to prevent Select2/Tailwind conflicts */
         .select2-container {
             z-index: 10000 !important;
         }
+
         .select2-container--default .select2-selection--single {
             height: 42px;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
         }
+
         .select2-container--default .select2-selection--single .select2-selection__rendered {
             line-height: 40px;
         }
+
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px;
         }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans">
-<!-- Topbar -->
-<nav class="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm border-b border-gray-200 z-50">
-    <div class="flex items-center justify-between h-full px-4 lg:px-6">
-        <!-- Left side -->
-        <div class="flex items-center space-x-4">
-            <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden">
-                <i class="fas fa-bars text-gray-600"></i>
-            </button>
-
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl">
-                    <i class="fas fa-coffee text-white text-lg"></i>
-                </div>
-                <div class="hidden sm:block">
-                    <h1 class="text-xl font-bold text-gray-900">
-                        GreatPearl <span class="text-primary-600">Coffee</span>
-                    </h1>
-                    <p class="text-xs text-gray-500 -mt-1">Management System</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right side -->
-        <div class="flex items-center space-x-4">
-            <!-- Notifications -->
-            <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <i class="fas fa-bell text-gray-600"></i>
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
-            </button>
-
-            {% if user.is_authenticated %}
-            <!-- User dropdown -->
-            <div class="relative group">
-                <button class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div class="w-8 h-8 bg-gradient-to-br from-accent-400 to-accent-500 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-semibold text-gray-900">{{ user.username|first|upper }}</span>
-                    </div>
-                    <div class="hidden md:block text-left">
-                        <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
-                        <p class="text-xs text-gray-500">Administrator</p>
-                    </div>
-                    <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+    <!-- Topbar -->
+    <nav class="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm border-b border-gray-200 z-50">
+        <div class="flex items-center justify-between h-full px-4 lg:px-6">
+            <!-- Left side -->
+            <div class="flex items-center space-x-4">
+                <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden">
+                    <i class="fas fa-bars text-gray-600"></i>
                 </button>
 
-                <!-- Dropdown menu -->
-                <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div class="py-2">
-                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            <i class="fas fa-user w-4 mr-3 text-gray-400"></i>
-                            Profile
-                        </a>
-                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            <i class="fas fa-cog w-4 mr-3 text-gray-400"></i>
-                            Settings
-                        </a>
-                        <hr class="my-2 border-gray-200">
-                        <a href="{% url 'logout' %}"
-                           class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                            <i class="fas fa-sign-out-alt w-4 mr-3 text-red-400"></i>
-                            Logout
-                        </a>
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl">
+                        <i class="fas fa-coffee text-white text-lg"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            GreatPearl <span class="text-primary-600">Coffee</span>
+                        </h1>
+                        <p class="text-xs text-gray-500 -mt-1">Management System</p>
                     </div>
                 </div>
             </div>
-            {% else %}
-            <a href="{% url 'login' %}"
-               class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
-                <i class="fas fa-sign-in-alt mr-2"></i>
-                Login
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</nav>
 
-<!-- Sidebar -->
-<aside id="sidebar"
-       class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 sidebar overflow-y-auto">
-    <div class="p-4">
-        <!-- Navigation -->
-        <nav class="space-y-2">
-            <div class="mb-6">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main</h3>
-                <ul class="space-y-1">
-                    <li>
-                        <a href="/"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-chart-pie w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'customer_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-users w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Customers</span>
-                            <span class="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{{ customer_count }}</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'inventory_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-boxes w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Inventory</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="mb-6">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Operations</h3>
-                <ul class="space-y-1">
-                    <li>
-                        <a href="{% url 'milling_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-cogs w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Milling</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'transaction_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-exchange-alt w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Transactions</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'supplier_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-truck w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Suppliers</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="mb-6">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sales</h3>
-                <ul class="space-y-1">
-                    <li>
-                        <a href="{% url 'purchase_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-shopping-cart w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Purchases</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'sale_list' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-cash-register w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Sales</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div>
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">System</h3>
-                <ul class="space-y-1">
-                    <li>
-                        <a href="{% url 'user_activities' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-history w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Activity Log</span>
-                        </a>
-                    </li>
-                    {% if request.user.is_superuser %}
-                    <li>
-                        <a href="{% url 'admin:index' %}"
-                           class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
-                            <i class="fas fa-cog w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
-                            <span class="font-medium">Admin</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </nav>
-    </div>
-</aside>
-
-<!-- Main Content -->
-<main class="lg:ml-64 pt-16 min-h-screen bg-gray-50">
-    <!-- Messages -->
-    {% if messages %}
-    <div class="p-4 lg:p-6">
-        {% for message in messages %}
-        <div class="mb-4 p-4 rounded-lg border-l-4 {% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-700{% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %}">
-            <div class="flex items-center">
-                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
-                <span>{{ message }}</span>
-                <button type="button" class="ml-auto text-gray-400 hover:text-gray-600"
-                        onclick="this.parentElement.parentElement.remove()">
-                    <i class="fas fa-times"></i>
+            <!-- Right side -->
+            <div class="flex items-center space-x-4">
+                <!-- Notifications -->
+                <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-bell text-gray-600"></i>
+                    <span
+                        class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
                 </button>
+
+                {% if user.is_authenticated %}
+                <!-- User dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-br from-accent-400 to-accent-500 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-semibold text-gray-900">{{ user.username|first|upper }}</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500">Administrator</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                    </button>
+
+                    <!-- Dropdown menu -->
+                    <div
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-user w-4 mr-3 text-gray-400"></i>
+                                Profile
+                            </a>
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-cog w-4 mr-3 text-gray-400"></i>
+                                Settings
+                            </a>
+                            <hr class="my-2 border-gray-200">
+                            <a href="{% url 'logout' %}"
+                                class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt w-4 mr-3 text-red-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}"
+                    class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Login
+                </a>
+                {% endif %}
             </div>
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    </nav>
 
-    <!-- Content -->
-    <div class="p-4 lg:p-6">
-        <!-- Page Header -->
-        <div class="mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 sidebar overflow-y-auto">
+        <div class="p-4">
+            <!-- Navigation -->
+            <nav class="space-y-2">
+                <div class="mb-6">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="/"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-chart-pie w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'customer_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-users w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Customers</span>
+                                <span class="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{{customer_count }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'inventory_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-boxes w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Inventory</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Operations</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{% url 'milling_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-cogs w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Milling</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'transaction_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-exchange-alt w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'supplier_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-truck w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Suppliers</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'assessment_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i
+                                    class="fas fa-clipboard-check w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Quality Assessment</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sales</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{% url 'purchase_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-shopping-cart w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Purchases</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'sale_list' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-cash-register w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Sales</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
                 <div>
-                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                        {% block page_title %}Dashboard{% endblock %}
-                    </h1>
-                    {% block breadcrumb %}
-                    <nav class="flex text-sm text-gray-500">
-                        <a href="#" class="hover:text-gray-700">Home</a>
-                        <span class="mx-2">/</span>
-                        <span>Dashboard</span>
-                    </nav>
-                    {% endblock %}
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">System</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{% url 'user_activities' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-history w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Activity Log</span>
+                            </a>
+                        </li>
+                        {% if request.user.is_superuser %}
+                        <li>
+                            <a href="{% url 'admin:index' %}"
+                                class="flex items-center px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group">
+                                <i class="fas fa-cog w-5 mr-3 text-gray-400 group-hover:text-primary-600"></i>
+                                <span class="font-medium">Admin</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
-                <div class="mt-4 sm:mt-0">
-                    {% block header_actions %}{% endblock %}
-                </div>
-            </div>
+            </nav>
         </div>
+    </aside>
 
-        <!-- Page Content -->
-        {% block content %}
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Total Customers</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">1,234</p>
-                        <p class="text-sm text-green-600 mt-1">
-                            <i class="fas fa-arrow-up mr-1"></i>12% from last month
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-blue-600"></i>
-                    </div>
+    <!-- Main Content -->
+    <main class="lg:ml-64 pt-16 min-h-screen bg-gray-50">
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="p-4 lg:p-6">
+            {% for message in messages %}
+            <div
+                class="mb-4 p-4 rounded-lg border-l-4 {% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-700{% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %}">
+                <div class="flex items-center">
+                    <i
+                        class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                    <span>{{ message }}</span>
+                    <button type="button" class="ml-auto text-gray-400 hover:text-gray-600"
+                        onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Monthly Sales</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">$56,789</p>
-                        <p class="text-sm text-green-600 mt-1">
-                            <i class="fas fa-arrow-up mr-1"></i>8% from last month
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-green-600"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Processing Orders</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">89</p>
-                        <p class="text-sm text-yellow-600 mt-1">
-                            <i class="fas fa-clock mr-1"></i>5 pending today
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-cogs text-yellow-600"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">24</p>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <i class="fas fa-truck mr-1"></i>All verified
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-truck text-purple-600"></i>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+        {% endif %}
 
-        <!-- Welcome Card -->
-        <div class="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-8 text-white mb-8">
-            <div class="flex flex-col lg:flex-row items-center justify-between">
-                <div class="text-center lg:text-left mb-6 lg:mb-0">
-                    <h2 class="text-3xl font-bold mb-2">Welcome to CoffeeHub</h2>
-                    <p class="text-primary-100 mb-4">Manage your coffee business efficiently with our comprehensive
-                        management system.</p>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button class="inline-flex items-center px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-book mr-2"></i>
-                            View Documentation
-                        </button>
-                        <button class="inline-flex items-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-400 transition-colors">
-                            <i class="fas fa-rocket mr-2"></i>
-                            Quick Start Guide
-                        </button>
+        <!-- Content -->
+        <div class="p-4 lg:p-6">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                            {% block page_title %}Dashboard{% endblock %}
+                        </h1>
+                        {% block breadcrumb %}
+                        <nav class="flex text-sm text-gray-500">
+                            <a href="{% url 'home' %}" class="hover:text-gray-700">Home</a>
+                            <span class="mx-2">/</span>
+                            <span>Dashboard</span>
+                        </nav>
+                        {% endblock %}
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        {% block header_actions %}{% endblock %}
                     </div>
                 </div>
-                <div class="flex-shrink-0">
-                    <div class="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-coffee text-6xl text-white"></i>
+
+                <!-- Page Content -->
+                {% block content %}
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Customers</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">1,234</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>12% from last month
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Monthly Sales</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">$56,789</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>8% from last month
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Processing Orders</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">89</p>
+                                <p class="text-sm text-yellow-600 mt-1">
+                                    <i class="fas fa-clock mr-1"></i>5 pending today
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cogs text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover-lift transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1">24</p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    <i class="fas fa-truck mr-1"></i>All verified
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-truck text-purple-600"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Welcome Card -->
+                <div class="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-8 text-white mb-8">
+                    <div class="flex flex-col lg:flex-row items-center justify-between">
+                        <div class="text-center lg:text-left mb-6 lg:mb-0">
+                            <h2 class="text-3xl font-bold mb-2">Welcome to CoffeeHub</h2>
+                            <p class="text-primary-100 mb-4">Manage your coffee business efficiently with our
+                                comprehensive
+                                management system.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    class="inline-flex items-center px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-book mr-2"></i>
+                                    View Documentation
+                                </button>
+                                <button
+                                    class="inline-flex items-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-400 transition-colors">
+                                    <i class="fas fa-rocket mr-2"></i>
+                                    Quick Start Guide
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-coffee text-6xl text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endblock %}
             </div>
-        </div>
-        {% endblock %}
+    </main>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay"
+        class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden opacity-0 invisible transition-all duration-300">
     </div>
-</main>
 
-<!-- Mobile Sidebar Overlay -->
-<div id="sidebarOverlay"
-     class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden opacity-0 invisible transition-all duration-300"></div>
+    {% block extra_js %}{% endblock %}
 
-<!-- Scripts -->
-<script>
-    // Sidebar toggle functionality
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    <!-- Scripts -->
+    <script>
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    function toggleSidebar() {
-        sidebar.classList.toggle('-translate-x-full');
-        sidebarOverlay.classList.toggle('opacity-0');
-        sidebarOverlay.classList.toggle('invisible');
-    }
-
-    sidebarToggle.addEventListener('click', toggleSidebar);
-    sidebarOverlay.addEventListener('click', toggleSidebar);
-
-    // Active navigation highlighting
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('aside nav a');
-    navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('bg-primary-50', 'text-primary-700', 'nav-active');
-            link.classList.remove('text-gray-700', 'hover:bg-gray-100');
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('opacity-0');
+            sidebarOverlay.classList.toggle('invisible');
         }
-    });
 
-    // Close mobile menu on window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 1024) {
-            sidebar.classList.remove('-translate-x-full');
-            sidebarOverlay.classList.add('opacity-0', 'invisible');
-        }
-    });
-</script>
-<!-- Add jQuery (required by Select2) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-{{ form.media.js }}
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Active navigation highlighting
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('aside nav a');
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('bg-primary-50', 'text-primary-700', 'nav-active');
+                link.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            }
+        });
+
+        // Close mobile menu on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.add('opacity-0', 'invisible');
+            }
+        });
+    </script>
+    <!-- Add jQuery (required by Select2) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    {{ form.media.js }}
 </body>
+
 </html>

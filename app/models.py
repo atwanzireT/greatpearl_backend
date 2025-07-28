@@ -50,10 +50,15 @@ class MillingProcess(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='milling_processes')
     initial_weight = models.DecimalField(max_digits=6, blank=True, null=True, decimal_places=2, validators=[MinValueValidator(0.1)])
     hulled_weight = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0.1)], null=True, blank=True)
-    milling_rate = models.DecimalField(max_digits=5, decimal_places=2, default=150.00)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=COMPLETED)
+    milling_rate = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null = True, default=150.00)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, blank=True, null = True, default=COMPLETED)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True
+    )
     notes = models.TextField(blank=True)
 
     @property
@@ -118,7 +123,6 @@ class Supplier(models.Model):
     """Track coffee suppliers/vendors"""
     id = models.CharField(primary_key=True, max_length=8, editable=False)
     name = models.CharField(max_length=255)
-    contact_person = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=20)
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
@@ -175,6 +179,16 @@ class CoffeePurchase(models.Model):
         (ROBUSTA, 'Robusta'),
     ]
 
+    PAYMENT_PENDING = 'P'
+    PAYMENT_PAID = 'D'
+    PAYMENT_PARTIAL = 'T'
+    PAYMENT_STATUS_CHOICES = [
+        (PAYMENT_PENDING, 'Pending'),
+        (PAYMENT_PAID, 'Paid'),
+        (PAYMENT_PARTIAL, 'Partial'),
+    ]
+
+
     supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, related_name='purchases')
     coffee_category = models.CharField(
         max_length=2, choices=COFFEE_CATEGORIES, verbose_name="Coffee Form", blank=True
@@ -183,9 +197,16 @@ class CoffeePurchase(models.Model):
     quantity = models.DecimalField(
         max_digits=8, decimal_places=0, validators=[MinValueValidator(0.01)], help_text="Weight in kilograms"
     )
-    unit_price = models.DecimalField(
-        max_digits=8, decimal_places=0, validators=[MinValueValidator(0.01)], help_text="Price per kilogram"
+    bags = models.PositiveIntegerField(
+        default=0, validators=[MinValueValidator(0)], help_text="Number of bags (if applicable)"
     )
+    reference_price = models.DecimalField(
+        max_digits=8, decimal_places=0, default=0, validators=[MinValueValidator(0.01)], help_text="Reference price per kilogram"
+    )
+    payment_status = models.CharField(
+        max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_PENDING, verbose_name="Payment Status"
+    )
+    assessment = models.BooleanField(default=False, verbose_name="Quality Assessment")
     purchase_date = models.DateField(default=timezone.now)
     delivery_date = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
@@ -193,12 +214,13 @@ class CoffeePurchase(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False
     )
 
+
     @property
     def total_cost(self):
         """Calculate total cost with null checks"""
-        if self.quantity is None or self.unit_price is None:
+        if self.quantity is None or self.reference_price is None:
             return 0.00
-        return round(float(self.quantity) * float(self.unit_price), 2)
+        return round(float(self.quantity) * float(self.reference_price), 2)
 
     class Meta:
         ordering = ['-purchase_date']
@@ -208,10 +230,6 @@ class CoffeePurchase(models.Model):
             models.CheckConstraint(
                 check=models.Q(quantity__gte=0.01),
                 name="quantity_gte_001"
-            ),
-            models.CheckConstraint(
-                check=models.Q(unit_price__gte=0.01),
-                name="unit_price_gte_001"
             ),
         ]
 
@@ -223,6 +241,84 @@ class CoffeePurchase(models.Model):
 
     def __str__(self):
         return f"{self.get_coffee_category_display()} {self.get_coffee_type_display()} - {self.quantity}kg"
+    
+
+class Assessment(models.Model):
+    coffee = models.OneToOneField('CoffeePurchase', on_delete=models.PROTECT, related_name='quality_assessment')
+    moisture_content = models.FloatField(blank=True, null=True)
+    group1_defects = models.FloatField(blank=True, null=True)
+    group2_defects = models.FloatField(blank=True, null=True)
+    below_screen_12 = models.FloatField(blank=True, null=True)
+    outturn = models.FloatField(blank=True, null=True)
+    pods = models.FloatField(blank=True, null=True)
+    husks = models.FloatField(blank=True, null=True)
+    stones = models.FloatField(blank=True, null=True)
+    fm = models.FloatField(blank=True, null=True)
+    discretion = models.FloatField(default=0)
+    assessed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, 
+        related_name='assessments', null=True, blank=True
+    )
+
+    @property
+    def actual_outturn(self):
+        """
+        Computes actual outturn based on a formula or external reference.
+        Placeholder formula here, adjust to match business logic.
+        """
+        # ⚠️ Replace with your real logic. This is a placeholder.
+        if self.moisture_content is None:
+            return None
+        
+        # Example: actual_outturn = 100 - (group1_defects + group2_defects + moisture effect)
+        g1 = self.group1_defects or 0
+        g2 = self.group2_defects or 0
+        mc = self.moisture_content or 0
+        return max(100 - (g1 + g2 + mc), 0)
+
+    @property
+    def is_rejected(self):
+        """
+        Reject if:
+        - outturn or actual_outturn is missing
+        - below_screen_12 exceeds 3%
+        """
+        if self.below_screen_12 is not None and self.below_screen_12 > 3:
+            return True
+        if self.outturn in [None, 0] or self.actual_outturn is None:
+            return True
+        return False
+
+    @property
+    def outturn_price(self):
+        if self.is_rejected:
+            return None
+        ref_price = float(self.coffee.reference_price or 0)
+        return (self.actual_outturn / self.outturn) * ref_price
+
+    @property
+    def foreign_matter_penalty(self):
+        fm_total = sum([
+            self.pods or 0,
+            self.husks or 0,
+            self.stones or 0
+        ])
+        penalty_rate = 146.55
+        return fm_total * penalty_rate
+
+    @property
+    def final_price(self):
+        if self.is_rejected:
+            return "REJECT"
+
+        base_price = self.outturn_price or 0
+        penalty = self.foreign_matter_penalty
+        adjusted = base_price - penalty + (self.discretion or 0)
+
+        return round(max(adjusted, 0), 2)
+
+    def __str__(self):
+        return f"Assessment for {self.coffee} - Final Price: {self.final_price}"
 
 
 class CoffeeSale(models.Model):

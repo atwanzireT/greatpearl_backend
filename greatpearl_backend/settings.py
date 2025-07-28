@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django.contrib.humanize',
 
     # Bootstrap
     'django_select2',
